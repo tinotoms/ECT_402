@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECT402 Wireless Communication • Numerical Questions Study Planner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap');
+        
+        body { font-family: 'Inter', system_ui, sans-serif; }
+        .title-font { font-family: 'Space Grotesk', sans-serif; }
+
+        .table-row {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .table-row:hover {
+            background-color: #1f2937;
+            transform: translateX(4px);
+        }
+        .table-row.completed {
+            opacity: 0.65;
+        }
+        .question-text {
+            transition: all 0.3s ease;
+        }
+        .table-row.completed .question-text {
+            text-decoration: line-through;
+            color: #9ca3af;
+        }
+        .progress-bar {
+            transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-200 min-h-screen">
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        <!-- HEADER -->
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="title-font text-4xl font-semibold text-white flex items-center gap-3">
+                    <i class="fa-solid fa-wifi text-[#00d4ff]"></i>
+                    ECT402 Wireless Communication
+                </h1>
+                <p class="text-xl text-gray-400 mt-1">Numerical Questions Study Planner &amp; Checklist</p>
+                <p class="text-sm text-gray-500 mt-2">34 questions • 190 total marks • All numerical questions included • Auto-save progress</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="resetProgress()" 
+                        class="flex items-center gap-2 px-5 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-2xl text-sm font-medium transition-colors">
+                    <i class="fa-solid fa-trash-can"></i>
+                    <span>Reset All Progress</span>
+                </button>
+                <div class="text-right">
+                    <div id="last-updated" class="text-xs text-gray-500">Last saved: just now</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DASHBOARD SUMMARY (3 cards only) -->
+        <div class="grid grid-cols-3 gap-4 mb-10">
+            <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-400 text-sm">Total Questions</p>
+                        <p id="total-questions" class="text-5xl font-semibold text-white mt-2">34</p>
+                    </div>
+                    <i class="fa-solid fa-list-check text-[#00d4ff] text-4xl opacity-20"></i>
+                </div>
+                <div class="mt-4 h-2 bg-gray-800 rounded-2xl overflow-hidden">
+                    <div id="progress-bar" class="progress-bar h-2 bg-gradient-to-r from-[#00d4ff] to-cyan-400 rounded-2xl" style="width: 0%"></div>
+                </div>
+                <p id="progress-text" class="text-sm text-gray-400 mt-2 flex justify-between">
+                    <span>0 completed</span>
+                    <span>0%</span>
+                </p>
+            </div>
+
+            <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-400 text-sm">Total Marks</p>
+                        <p id="total-marks" class="text-5xl font-semibold text-white mt-2">190</p>
+                    </div>
+                    <i class="fa-solid fa-calculator text-emerald-400 text-4xl opacity-20"></i>
+                </div>
+                <p id="marks-completed" class="text-emerald-400 text-sm font-medium mt-6">0 marks completed</p>
+            </div>
+
+            <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-400 text-sm">High Priority</p>
+                        <p id="high-priority-count" class="text-5xl font-semibold text-amber-400 mt-2">2</p>
+                    </div>
+                    <i class="fa-solid fa-fire text-amber-400 text-4xl opacity-20"></i>
+                </div>
+                <p class="text-xs text-amber-400/80 mt-6">Questions repeated in 2 papers • Solve first</p>
+            </div>
+        </div>
+
+        <!-- FILTERS -->
+        <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 mb-8">
+            <div class="flex flex-wrap gap-4 items-end">
+                <div class="flex-1 min-w-[280px]">
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Search Question</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                        <input id="search-input" type="text" placeholder="Search any part of the question..." onkeyup="applyFilters()" 
+                               class="w-full bg-gray-800 border border-gray-700 focus:border-[#00d4ff] rounded-2xl py-4 pl-11 pr-6 text-white placeholder:text-gray-500 outline-none">
+                    </div>
+                </div>
+
+                <div class="min-w-[140px]">
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Module</label>
+                    <select id="module-filter" onchange="applyFilters()" class="w-full bg-gray-800 border border-gray-700 text-white rounded-2xl py-4 px-5 outline-none">
+                        <option value="">All Modules</option>
+                        <option value="1">Module 1</option>
+                        <option value="2">Module 2</option>
+                        <option value="3">Module 3</option>
+                        <option value="4">Module 4</option>
+                        <option value="5">Module 5</option>
+                    </select>
+                </div>
+
+                <div class="min-w-[140px]">
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Marks</label>
+                    <select id="marks-filter" onchange="applyFilters()" class="w-full bg-gray-800 border border-gray-700 text-white rounded-2xl py-4 px-5 outline-none">
+                        <option value="">All Marks</option>
+                        <option value="3">3 marks</option>
+                        <option value="4">4 marks</option>
+                        <option value="5">5 marks</option>
+                        <option value="6">6 marks</option>
+                        <option value="7">7 marks</option>
+                        <option value="8">8 marks</option>
+                    </select>
+                </div>
+
+                <div class="min-w-[220px]">
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Paper</label>
+                    <select id="paper-filter" onchange="applyFilters()" class="w-full bg-gray-800 border border-gray-700 text-white rounded-2xl py-4 px-5 outline-none">
+                        <option value="">All Papers</option>
+                        <option value="June 2023 Regular">June 2023 Regular</option>
+                        <option value="Oct 2023 Supplementary">Oct 2023 Supplementary</option>
+                        <option value="May 2024">May 2024</option>
+                        <option value="Aug 2024 Supplementary">Aug 2024 Supplementary</option>
+                        <option value="April 2025 Supplementary">April 2025 Supplementary</option>
+                        <option value="Sept 2025">Sept 2025</option>
+                    </select>
+                </div>
+
+                <div class="min-w-[160px]">
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Repetition</label>
+                    <div class="flex gap-2">
+                        <button onclick="toggleRepetitionFilter(0)" id="rep-all" class="filter-btn active px-6 py-4 bg-gray-800 hover:bg-gray-700 rounded-2xl text-sm font-medium flex-1">All</button>
+                        <button onclick="toggleRepetitionFilter(1)" id="rep-1" class="filter-btn px-6 py-4 bg-gray-800 hover:bg-gray-700 rounded-2xl text-sm font-medium flex-1">Once</button>
+                        <button onclick="toggleRepetitionFilter(2)" id="rep-2" class="filter-btn px-6 py-4 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 rounded-2xl text-sm font-medium flex-1"><i class="fa-solid fa-fire mr-1"></i>Repeated (2)</button>
+                    </div>
+                </div>
+
+                <button onclick="clearFilters()" class="px-8 py-4 text-gray-400 hover:text-white border border-gray-700 hover:border-gray-500 rounded-2xl text-sm font-medium transition-colors">Clear Filters</button>
+            </div>
+        </div>
+
+        <!-- MAIN TABLE -->
+        <div class="bg-gray-900 border border-gray-800 rounded-3xl overflow-hidden">
+            <table class="w-full" id="questions-table">
+                <thead>
+                    <tr class="border-b border-gray-800">
+                        <th class="text-left py-5 px-8 font-medium text-gray-400 text-sm w-12">STATUS</th>
+                        <th class="text-left py-5 px-8 font-medium text-gray-400 text-sm">COMPLETE QUESTION</th>
+                        <th class="text-left py-5 px-8 font-medium text-gray-400 text-sm w-20">MODULE</th>
+                        <th class="text-left py-5 px-8 font-medium text-gray-400 text-sm w-20">MARKS</th>
+                        <th class="text-left py-5 px-8 font-medium text-gray-400 text-sm">PAPER</th>
+                        <th class="text-left py-5 px-8 font-medium text-gray-400 text-sm w-20">REP</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body" class="text-sm divide-y divide-gray-800"></tbody>
+            </table>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="flex justify-between items-center mt-6 text-xs text-gray-500 px-2">
+            <div id="filtered-count">Showing all 34 questions</div>
+            <div class="flex items-center gap-6">
+                <div><i class="fa-solid fa-circle-check text-emerald-400"></i> <span id="completed-count">0</span> completed</div>
+                <div class="h-3 w-px bg-gray-700"></div>
+                <div>Progress saved automatically in your browser</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ====================== COMPLETE & VERIFIED DATASET (34 questions) ======================
+        let questions = [
+            { id: 1, module: 2, marks: 3, paper: "June 2023 Regular", repetition: 1, question: "Find the Fraunhofer distance for an antenna with maximum dimension of one meter and operating frequency of 900MHz. What is the significance of Fraunhofer distance?", completed: false },
+            { id: 2, module: 1, marks: 7, paper: "June 2023 Regular", repetition: 1, question: "If a Signal to Interference Ratio (SIR) of 20dB is required for satisfactory forward channel performance of a cellular system, what is the frequency reuse factor and cluster size that should be used for maximum capacity? The path loss exponent n=4. Assume there are 12 co-channel cells in first tier and all of them are at the same distance from mobile.", completed: false },
+            { id: 3, module: 2, marks: 6, paper: "June 2023 Regular", repetition: 2, question: "A transmitter radiates a sinusoidal carrier frequency of 3GHz. For a vehicle moving at a speed of 72Kmph, compute the received frequency if the mobile is moving (i) Directly towards the transmitter (ii) Directly away from the transmitter", completed: false },
+            { id: 4, module: 2, marks: 5, paper: "June 2023 Regular", repetition: 2, question: "Calculate the coherence time of a channel, if doppler shift is produced due to the movement of a mobile with a velocity of 50 m/sec and operating at 1900MHz.", completed: false },
+            { id: 5, module: 4, marks: 7, paper: "June 2023 Regular", repetition: 1, question: "Design a three tap zero forcing equaliser with following parameters P(0)=1, P(-1)=0.3, P(-2)=-0.05, P(1)=0.2, P(2)=-0.06.", completed: false },
+            { id: 6, module: 5, marks: 7, paper: "June 2023 Regular", repetition: 1, question: "A receiving antenna is located 60km from the transmitting antenna. The Height of the transmitting antenna is 100meters. What is the required height of the receiving antenna. Consider effective radius of earth.", completed: false },
+            { id: 7, module: 2, marks: 3, paper: "Oct 2023 Supplementary", repetition: 1, question: "Assume a receiver is located 10km away from a 50W transmitter. Given f = 900 MHz, Gr = 1 and Gt = 2. Find the power at receiver and RMS voltage at receiver antenna matched with 50 Ω resistor.", completed: false },
+            { id: 8, module: 2, marks: 7, paper: "Oct 2023 Supplementary", repetition: 1, question: "Consider a wireless channel, where power falloff with distance follows the formula Pr(d)=Pt(d0/d)³ for d0=50m. Assume the channel has bandwidth B =50KHz and AWGN with noise Ps=N0/2, where N0=10⁻⁹ W/Hz. For a transmit power of 2W, find the capacity of this channel for a receive transmit distance of 200m and 1KM? What is your conclusion?", completed: false },
+            { id: 9, module: 2, marks: 7, paper: "Oct 2023 Supplementary", repetition: 1, question: "What is the received power in dBm for a free space signal, whose transmit power is 1W and carrier frequency is 2.4GHz. If the receiver is at a distance of 1 mile (1.6 km) from the transmitter. What is the path loss in dB?", completed: false },
+            { id: 10, module: 3, marks: 7, paper: "Oct 2023 Supplementary", repetition: 1, question: "Determine the average SNR per bit of BPSK modulation in Rayleigh slow fading channel in such that 90% of the times, the average probability of bit error is less than 10⁻⁴.", completed: false },
+            { id: 11, module: 5, marks: 7, paper: "Oct 2023 Supplementary", repetition: 1, question: "A television transmitter antenna mounted at a height of 200 meters and the receiving antenna has a height of 20 meters. What is the maximum spacing between the transmitter and receiver through tropospheric propagation? Also compute the radio horizon in this case?", completed: false },
+            { id: 12, module: 5, marks: 6, paper: "Oct 2023 Supplementary", repetition: 1, question: "What is the critical frequency for reflection at vertical incidence if the maximum value of electron density is 1.24×10⁸ electrons/cc?", completed: false },
+            { id: 13, module: 5, marks: 3, paper: "May 2024", repetition: 1, question: "Two aircrafts are flying at altitudes of 3 Km and 5 Km respectively. What is the maximum possible distance along the surface of the earth over which they can have effective point to point communication? (Use effective radius of earth with K=4/3)", completed: false },
+            { id: 14, module: 1, marks: 4, paper: "May 2024", repetition: 1, question: "In a cellular system using a 4-cell reuse pattern with a total bandwidth of 60MHz, if 2 channels of 30 kHz each are needed for a call, how many simultaneous calls can be accommodated in one cell and in one cluster?", completed: false },
+            { id: 15, module: 2, marks: 8, paper: "May 2024", repetition: 1, question: "A communication link is to be established between two station using half wave length antenna for maximum directive gain. Transmitter power is 2 KW, distance between transmitter and receiver is 200 Km. What is the maximum power received by the receiver. Frequency of operation is 150 MHz. Gain of transmitter and receiver = 1.64", completed: false },
+            { id: 16, module: 2, marks: 6, paper: "May 2024", repetition: 1, question: "A wireless channel has channel bandwidth B = 320 kHz and AWGN with noise power spectral density N₀/2. It is required to obtain a data rate of 1.6Mbps. Calculate the minimum value of SNR required.", completed: false },
+            { id: 17, module: 5, marks: 6, paper: "May 2024", repetition: 1, question: "The critical frequencies for F1 and F2 layers are observed as 5 MHz and 9 MHz respectively. Find the maximum electronic concentration of these two layers.", completed: false },
+            { id: 18, module: 5, marks: 6, paper: "May 2024", repetition: 1, question: "Calculate the skip distance for flat earth with MUF of 10 MHz. The wave is reflected from a height of 300km where the maximum value of refractive index is 0.9 and critical frequency is 5 MHz.", completed: false },
+            { id: 19, module: 1, marks: 3, paper: "Aug 2024 Supplementary", repetition: 1, question: "Determine the number of channels per cluster and the total channel capacity for a cellular telephone area composed of 10 clusters with seven cells in each cluster and 10 channels in each cell.", completed: false },
+            { id: 20, module: 2, marks: 3, paper: "Aug 2024 Supplementary", repetition: 2, question: "A transmitter radiates a sinusoidal carrier frequency of 3GHz. For a vehicle moving at a speed of 72Kmph, compute the received frequency if the mobile is moving (i) Directly towards the transmitter (ii) Directly away from the transmitter", completed: false },
+            { id: 21, module: 1, marks: 6, paper: "Aug 2024 Supplementary", repetition: 1, question: "A cellular service provider uses a digital TDMA scheme with a worst case tolerance of 23dB signal-to-interference ratio. Calculate the optimal value of cluster size N and frequency reuse factor Q that should be used for maximum capacity for omnidirectional antennas. (No of co-channel cells is 6 and path loss exponent n = 4.)", completed: false },
+            { id: 22, module: 2, marks: 3, paper: "Aug 2024 Supplementary", repetition: 1, question: "Calculate the coherence time of a channel, if doppler shift is produced due to the movement of a mobile with a velocity of 50 m/sec and operating at 1800MHz.", completed: false },
+            { id: 23, module: 3, marks: 6, paper: "Aug 2024 Supplementary", repetition: 1, question: "Determine the average SNR per bit of BPSK modulation in Rayleigh slow-fading channel such that 95% of the times, average probability of bit error is less than 10⁻⁴.", completed: false },
+            { id: 24, module: 5, marks: 5, paper: "Aug 2024 Supplementary", repetition: 1, question: "Determine the maximum ionic density and critical frequency of an ionospheric layer with refractive index 0.92 and a frequency of 10MHz.", completed: false },
+            { id: 25, module: 5, marks: 7, paper: "Aug 2024 Supplementary", repetition: 1, question: "A receiving antenna is located 65 km from the transmitting antenna. The Height of the transmitting antenna is 100meters. What is the required height of the receiving antenna. Consider effective radius of earth.", completed: false },
+            { id: 26, module: 1, marks: 3, paper: "April 2025 Supplementary", repetition: 1, question: "If a total of 33 MHz of bandwidth is allocated to particular FDD cellular telephone system which uses two 25kHz simplex channels to provide full duplex voice and control channels, compute the number of channels available per cell if a system uses (a) 4-cell reuse, (b) 7 cell reuse.", completed: false },
+            { id: 27, module: 2, marks: 4, paper: "April 2025 Supplementary", repetition: 2, question: "Calculate the coherence time of a channel, if doppler shift is produced due to the movement of a mobile with a velocity of 50 m/sec and operating at 1900MHz.", completed: false },
+            { id: 28, module: 5, marks: 6, paper: "April 2025 Supplementary", repetition: 1, question: "When the maximum electron density of the ionosphere layer corresponds to refractive index of 0.92 at the frequency of 10MHz, find the range if the frequency is MUF itself. The height of the ray reflection point on the ionospheric layer is 400km. Assume flat earth and negligible effect of earth’s magnetic field.", completed: false },
+            { id: 29, module: 1, marks: 7, paper: "Sept 2025", repetition: 1, question: "If a cellular system supports 150 simultaneous calls per cell and each call requires 24 kbps, determine the bandwidth needed for a 4-cell cluster.", completed: false },
+            { id: 30, module: 2, marks: 7, paper: "Sept 2025", repetition: 1, question: "A wireless signal has a Doppler shift of 150 Hz when moving at 60 km/h. Determine the original frequency of the signal.", completed: false },
+            { id: 31, module: 3, marks: 7, paper: "Sept 2025", repetition: 1, question: "For an OFDM system with a cyclic prefix length of 2 µs and a maximum channel delay spread of 15 µs, determine the maximum subcarrier spacing to avoid ISI.", completed: false },
+            { id: 32, module: 4, marks: 7, paper: "Sept 2025", repetition: 1, question: "In a multicarrier system with 128 subcarriers, each having a bandwidth of 20 kHz and spaced 20 kHz apart determine the overall bandwidth used by the system.", completed: false },
+            { id: 33, module: 5, marks: 7, paper: "Sept 2025", repetition: 1, question: "If a radio signal of 5 MHz frequency is transmitted towards the ionosphere at an angle of 60° with the ground. It takes approximately 2 milliseconds for a round trip after reflecting from the D layer of the ionosphere; calculate the distance from the source at which the signal is first incident on the ground.", completed: false },
+            { id: 34, module: 5, marks: 7, paper: "Sept 2025", repetition: 1, question: "Given the critical frequency for the D layer of the ionosphere is 6 MHz, calculate the maximum usable frequency for a radio signal transmitted at an angle of incidence of 30 degrees.", completed: false }
+        ];
+
+        // ====================== CORE FUNCTIONS ======================
+        function loadProgress() {
+            const saved = localStorage.getItem('ect402_progress');
+            if (saved) {
+                const completedIds = JSON.parse(saved);
+                questions.forEach(q => q.completed = completedIds.includes(q.id));
+            }
+        }
+
+        function saveProgress() {
+            const completedIds = questions.filter(q => q.completed).map(q => q.id);
+            localStorage.setItem('ect402_progress', JSON.stringify(completedIds));
+            const el = document.getElementById('last-updated');
+            el.innerHTML = `Last saved: <span class="text-emerald-400">just now</span>`;
+            setTimeout(() => el.textContent = 'Last saved: just now', 2500);
+        }
+
+        function calculateStats() {
+            const completed = questions.filter(q => q.completed);
+            const totalCompleted = completed.length;
+            const totalCompletedMarks = completed.reduce((sum, q) => sum + q.marks, 0);
+            const totalMarks = questions.reduce((sum, q) => sum + q.marks, 0);
+            const progress = Math.round((totalCompleted / questions.length) * 100);
+            
+            document.getElementById('total-questions').textContent = questions.length;
+            document.getElementById('total-marks').textContent = totalMarks;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+            document.getElementById('progress-text').innerHTML = `<span>${totalCompleted} completed</span><span>${progress}%</span>`;
+            document.getElementById('marks-completed').innerHTML = `<span class="font-semibold">${totalCompletedMarks}</span> / ${totalMarks} marks completed`;
+            document.getElementById('completed-count').textContent = totalCompleted;
+            document.getElementById('high-priority-count').textContent = questions.filter(q => q.repetition === 2).length;
+        }
+
+        function renderTable(filteredQuestions) {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+            if (filteredQuestions.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="py-12 text-center text-gray-400"><i class="fa-solid fa-magnifying-glass text-4xl mb-3 block"></i>No questions match your filters</td></tr>`;
+                return;
+            }
+            filteredQuestions.forEach(q => {
+                const row = document.createElement('tr');
+                row.className = `table-row ${q.completed ? 'completed' : ''}`;
+                row.innerHTML = `
+                    <td class="py-5 px-8">
+                        <input type="checkbox" ${q.completed ? 'checked' : ''} onchange="toggleComplete(${q.id}, this.checked)" class="w-5 h-5 accent-[#00d4ff] cursor-pointer">
+                    </td>
+                    <td class="py-5 px-8 pr-12">
+                        <div class="question-text text-gray-200 leading-relaxed">${q.question}</div>
+                    </td>
+                    <td class="py-5 px-8 font-medium">Module ${q.module}</td>
+                    <td class="py-5 px-8 font-semibold text-[#00d4ff]">${q.marks}</td>
+                    <td class="py-5 px-8 text-gray-300">${q.paper}</td>
+                    <td class="py-5 px-8">
+                        ${q.repetition === 2 
+                            ? `<span class="inline-flex items-center gap-1 bg-amber-400 text-black text-xs font-bold px-3 py-1 rounded-2xl"><i class="fa-solid fa-fire"></i>2</span>` 
+                            : `<span class="text-gray-400 text-xs">1</span>`}
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function toggleComplete(id, isChecked) {
+            const question = questions.find(q => q.id === id);
+            if (question) {
+                question.completed = isChecked;
+                saveProgress();
+                calculateStats();
+                applyFilters();
+            }
+        }
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+            const moduleFilter = document.getElementById('module-filter').value;
+            const marksFilter = document.getElementById('marks-filter').value;
+            const paperFilter = document.getElementById('paper-filter').value;
+            const activeRepFilter = document.querySelector('.filter-btn.active').getAttribute('data-rep') || 'all';
+
+            let filtered = questions.filter(q => {
+                const matchesSearch = !searchTerm || q.question.toLowerCase().includes(searchTerm);
+                const matchesModule = !moduleFilter || q.module.toString() === moduleFilter;
+                const matchesMarks = !marksFilter || q.marks.toString() === marksFilter;
+                const matchesPaper = !paperFilter || q.paper === paperFilter;
+                let matchesRep = true;
+                if (activeRepFilter === '1') matchesRep = q.repetition === 1;
+                if (activeRepFilter === '2') matchesRep = q.repetition === 2;
+                return matchesSearch && matchesModule && matchesMarks && matchesPaper && matchesRep;
+            });
+
+            renderTable(filtered);
+            document.getElementById('filtered-count').innerHTML = `Showing <span class="font-semibold text-white">${filtered.length}</span> of ${questions.length} questions`;
+        }
+
+        function toggleRepetitionFilter(mode) {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active', 'bg-amber-500/10', 'text-amber-400'));
+            if (mode === 0) document.getElementById('rep-all').classList.add('active');
+            else if (mode === 1) document.getElementById('rep-1').classList.add('active');
+            else if (mode === 2) document.getElementById('rep-2').classList.add('active', 'bg-amber-500/10', 'text-amber-400');
+            applyFilters();
+        }
+
+        function clearFilters() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('module-filter').value = '';
+            document.getElementById('marks-filter').value = '';
+            document.getElementById('paper-filter').value = '';
+            toggleRepetitionFilter(0);
+            applyFilters();
+        }
+
+        function resetProgress() {
+            if (confirm('Reset ALL progress? This cannot be undone.')) {
+                questions.forEach(q => q.completed = false);
+                localStorage.removeItem('ect402_progress');
+                calculateStats();
+                applyFilters();
+            }
+        }
+
+        // ====================== INITIALIZE ======================
+        function initializeApp() {
+            loadProgress();
+            calculateStats();
+            renderTable(questions);
+            
+            document.getElementById('rep-all').setAttribute('data-rep', 'all');
+            document.getElementById('rep-1').setAttribute('data-rep', '1');
+            document.getElementById('rep-2').setAttribute('data-rep', '2');
+            
+            console.log('%c✅ ECT402 Study Planner loaded with all 34 numerical questions', 'color:#00d4ff; font-family:monospace');
+        }
+
+        window.onload = initializeApp;
+    </script>
+</body>
+</html>
