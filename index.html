@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ECT402 Wireless Communication • Numerical Questions Study Planner</title>
+    <title>ECT402 Wireless Communication • Study Planner</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
@@ -32,6 +32,10 @@
         .progress-bar {
             transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
+        .tab-active {
+            border-bottom: 3px solid #00d4ff;
+            color: white;
+        }
     </style>
 </head>
 <body class="bg-gray-950 text-gray-200 min-h-screen">
@@ -43,27 +47,36 @@
                     <i class="fa-solid fa-wifi text-[#00d4ff]"></i>
                     ECT402 Wireless Communication
                 </h1>
-                <p class="text-xl text-gray-400 mt-1">Numerical Questions Study Planner &amp; Checklist</p>
-                <p class="text-sm text-gray-500 mt-2">34 questions • 190 total marks • All numerical questions included • Auto-save progress</p>
+                <p class="text-xl text-gray-400 mt-1">Full Study Planner – Numerical + Derivations</p>
+                <p class="text-sm text-gray-500 mt-2">34 Numerical + 22 Derivation questions • Auto-save progress</p>
             </div>
-            <div class="flex items-center gap-4">
-                <button onclick="resetProgress()" 
-                        class="flex items-center gap-2 px-5 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-2xl text-sm font-medium transition-colors">
-                    <i class="fa-solid fa-trash-can"></i>
-                    <span>Reset All Progress</span>
-                </button>
-                <div class="text-right">
-                    <div id="last-updated" class="text-xs text-gray-500">Last saved: just now</div>
-                </div>
-            </div>
+            <button onclick="resetAllProgress()" 
+                    class="flex items-center gap-2 px-5 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-2xl text-sm font-medium transition-colors">
+                <i class="fa-solid fa-trash-can"></i>
+                <span>Reset All Progress</span>
+            </button>
         </div>
 
-        <!-- DASHBOARD SUMMARY (3 cards only) -->
-        <div class="grid grid-cols-3 gap-4 mb-10">
+        <!-- TABS -->
+        <div class="flex border-b border-gray-800 mb-6">
+            <button onclick="switchTab(0)" id="tab-0"
+                    class="tab-active flex-1 md:flex-none px-8 py-4 text-lg font-medium flex items-center gap-2">
+                <i class="fa-solid fa-calculator"></i>
+                Numerical Questions
+            </button>
+            <button onclick="switchTab(1)" id="tab-1"
+                    class="flex-1 md:flex-none px-8 py-4 text-lg font-medium flex items-center gap-2">
+                <i class="fa-solid fa-pen-to-square"></i>
+                Derivation Questions
+            </button>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div class="grid grid-cols-3 gap-4 mb-8" id="dashboard">
             <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6">
                 <div class="flex justify-between items-start">
                     <div>
-                        <p class="text-gray-400 text-sm">Total Questions</p>
+                        <p class="text-gray-400 text-sm" id="dashboard-title">Total Questions</p>
                         <p id="total-questions" class="text-5xl font-semibold text-white mt-2">34</p>
                     </div>
                     <i class="fa-solid fa-list-check text-[#00d4ff] text-4xl opacity-20"></i>
@@ -72,8 +85,7 @@
                     <div id="progress-bar" class="progress-bar h-2 bg-gradient-to-r from-[#00d4ff] to-cyan-400 rounded-2xl" style="width: 0%"></div>
                 </div>
                 <p id="progress-text" class="text-sm text-gray-400 mt-2 flex justify-between">
-                    <span>0 completed</span>
-                    <span>0%</span>
+                    <span>0 completed</span><span>0%</span>
                 </p>
             </div>
 
@@ -96,7 +108,7 @@
                     </div>
                     <i class="fa-solid fa-fire text-amber-400 text-4xl opacity-20"></i>
                 </div>
-                <p class="text-xs text-amber-400/80 mt-6">Questions repeated in 2 papers • Solve first</p>
+                <p class="text-xs text-amber-400/80 mt-6">Repeated questions • Solve first</p>
             </div>
         </div>
 
@@ -107,14 +119,16 @@
                     <label class="block text-xs font-medium text-gray-400 mb-1">Search Question</label>
                     <div class="relative">
                         <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
-                        <input id="search-input" type="text" placeholder="Search any part of the question..." onkeyup="applyFilters()" 
+                        <input id="search-input" type="text" placeholder="Search any part of the question..." 
+                               onkeyup="applyFilters()" 
                                class="w-full bg-gray-800 border border-gray-700 focus:border-[#00d4ff] rounded-2xl py-4 pl-11 pr-6 text-white placeholder:text-gray-500 outline-none">
                     </div>
                 </div>
 
                 <div class="min-w-[140px]">
                     <label class="block text-xs font-medium text-gray-400 mb-1">Module</label>
-                    <select id="module-filter" onchange="applyFilters()" class="w-full bg-gray-800 border border-gray-700 text-white rounded-2xl py-4 px-5 outline-none">
+                    <select id="module-filter" onchange="applyFilters()" 
+                            class="w-full bg-gray-800 border border-gray-700 text-white rounded-2xl py-4 px-5 outline-none">
                         <option value="">All Modules</option>
                         <option value="1">Module 1</option>
                         <option value="2">Module 2</option>
@@ -126,7 +140,8 @@
 
                 <div class="min-w-[140px]">
                     <label class="block text-xs font-medium text-gray-400 mb-1">Marks</label>
-                    <select id="marks-filter" onchange="applyFilters()" class="w-full bg-gray-800 border border-gray-700 text-white rounded-2xl py-4 px-5 outline-none">
+                    <select id="marks-filter" onchange="applyFilters()" 
+                            class="w-full bg-gray-800 border border-gray-700 text-white rounded-2xl py-4 px-5 outline-none">
                         <option value="">All Marks</option>
                         <option value="3">3 marks</option>
                         <option value="4">4 marks</option>
@@ -134,12 +149,15 @@
                         <option value="6">6 marks</option>
                         <option value="7">7 marks</option>
                         <option value="8">8 marks</option>
+                        <option value="9">9 marks</option>
+                        <option value="10">10 marks</option>
                     </select>
                 </div>
 
                 <div class="min-w-[220px]">
                     <label class="block text-xs font-medium text-gray-400 mb-1">Paper</label>
-                    <select id="paper-filter" onchange="applyFilters()" class="w-full bg-gray-800 border border-gray-700 text-white rounded-2xl py-4 px-5 outline-none">
+                    <select id="paper-filter" onchange="applyFilters()" 
+                            class="w-full bg-gray-800 border border-gray-700 text-white rounded-2xl py-4 px-5 outline-none">
                         <option value="">All Papers</option>
                         <option value="June 2023 Regular">June 2023 Regular</option>
                         <option value="Oct 2023 Supplementary">Oct 2023 Supplementary</option>
@@ -155,7 +173,7 @@
                     <div class="flex gap-2">
                         <button onclick="toggleRepetitionFilter(0)" id="rep-all" class="filter-btn active px-6 py-4 bg-gray-800 hover:bg-gray-700 rounded-2xl text-sm font-medium flex-1">All</button>
                         <button onclick="toggleRepetitionFilter(1)" id="rep-1" class="filter-btn px-6 py-4 bg-gray-800 hover:bg-gray-700 rounded-2xl text-sm font-medium flex-1">Once</button>
-                        <button onclick="toggleRepetitionFilter(2)" id="rep-2" class="filter-btn px-6 py-4 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 rounded-2xl text-sm font-medium flex-1"><i class="fa-solid fa-fire mr-1"></i>Repeated (2)</button>
+                        <button onclick="toggleRepetitionFilter(2)" id="rep-2" class="filter-btn px-6 py-4 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 rounded-2xl text-sm font-medium flex-1"><i class="fa-solid fa-fire mr-1"></i>Repeated</button>
                     </div>
                 </div>
 
@@ -163,7 +181,7 @@
             </div>
         </div>
 
-        <!-- MAIN TABLE -->
+        <!-- TABLE -->
         <div class="bg-gray-900 border border-gray-800 rounded-3xl overflow-hidden">
             <table class="w-full" id="questions-table">
                 <thead>
@@ -180,9 +198,8 @@
             </table>
         </div>
 
-        <!-- FOOTER -->
         <div class="flex justify-between items-center mt-6 text-xs text-gray-500 px-2">
-            <div id="filtered-count">Showing all 34 questions</div>
+            <div id="filtered-count">Showing all questions</div>
             <div class="flex items-center gap-6">
                 <div><i class="fa-solid fa-circle-check text-emerald-400"></i> <span id="completed-count">0</span> completed</div>
                 <div class="h-3 w-px bg-gray-700"></div>
@@ -192,8 +209,9 @@
     </div>
 
     <script>
-        // ====================== COMPLETE & VERIFIED DATASET (34 questions) ======================
-        let questions = [
+        // ====================== NUMERICAL QUESTIONS ======================
+        let numericalQuestions = [
+            // (All 34 numerical questions from previous planner)
             { id: 1, module: 2, marks: 3, paper: "June 2023 Regular", repetition: 1, question: "Find the Fraunhofer distance for an antenna with maximum dimension of one meter and operating frequency of 900MHz. What is the significance of Fraunhofer distance?", completed: false },
             { id: 2, module: 1, marks: 7, paper: "June 2023 Regular", repetition: 1, question: "If a Signal to Interference Ratio (SIR) of 20dB is required for satisfactory forward channel performance of a cellular system, what is the frequency reuse factor and cluster size that should be used for maximum capacity? The path loss exponent n=4. Assume there are 12 co-channel cells in first tier and all of them are at the same distance from mobile.", completed: false },
             { id: 3, module: 2, marks: 6, paper: "June 2023 Regular", repetition: 2, question: "A transmitter radiates a sinusoidal carrier frequency of 3GHz. For a vehicle moving at a speed of 72Kmph, compute the received frequency if the mobile is moving (i) Directly towards the transmitter (ii) Directly away from the transmitter", completed: false },
@@ -230,37 +248,73 @@
             { id: 34, module: 5, marks: 7, paper: "Sept 2025", repetition: 1, question: "Given the critical frequency for the D layer of the ionosphere is 6 MHz, calculate the maximum usable frequency for a radio signal transmitted at an angle of incidence of 30 degrees.", completed: false }
         ];
 
-        // ====================== CORE FUNCTIONS ======================
+        // ====================== DERIVATION QUESTIONS ======================
+        let derivationQuestions = [
+            { id: 101, module: 2, marks: 8, paper: "June 2023 Regular", repetition: 3, question: "What is the importance of Two Ray model? Derive the expression for path loss in a two ray ground reflection model.", completed: false },
+            { id: 102, module: 3, marks: 8, paper: "June 2023 Regular", repetition: 3, question: "Derive expression for average probability of error in BPSK under Rayleigh flat fading, when the symbol duration is roughly equal to channel coherence time.", completed: false },
+            { id: 103, module: 4, marks: 7, paper: "June 2023 Regular", repetition: 1, question: "Derive the expression for the impulse response Heq(z), of a Minimum Mean Square Error (MMSE) equaliser.", completed: false },
+            { id: 104, module: 5, marks: 7, paper: "June 2023 Regular", repetition: 1, question: "Derive an expression for the LOS distance in km when the antenna heights above ground are ht and hr respectively for the transmitter and receiver antennas.", completed: false },
+            { id: 105, module: 5, marks: 7, paper: "June 2023 Regular", repetition: 4, question: "Derive the relation between the terms (i) Critical Frequency (ii) Skip Distance (iii) Maximum Usable Frequency", completed: false },
+            { id: 106, module: 2, marks: 3, paper: "Oct 2023 Supplementary", repetition: 1, question: "How does fading occur? Derive the expression for doppler shift.", completed: false },
+            { id: 107, module: 2, marks: 7, paper: "Oct 2023 Supplementary", repetition: 3, question: "Derive the expression for the impulse response model of a multipath channel", completed: false },
+            { id: 108, module: 4, marks: 7, paper: "Oct 2023 Supplementary", repetition: 2, question: "Derive the expression for received SNR of transmitter diversity with 2 X 2 Alamouti scheme.", completed: false },
+            { id: 109, module: 5, marks: 7, paper: "Oct 2023 Supplementary", repetition: 4, question: "Derive expression for critical frequency, maximum usable frequency and skip distance (assume flat earth’s surface) for skywave propagation.", completed: false },
+            { id: 110, module: 2, marks: 8, paper: "May 2024", repetition: 3, question: "With neat figure derive the expression for path loss in a Two-ray ground model.", completed: false },
+            { id: 111, module: 3, marks: 8, paper: "May 2024", repetition: 1, question: "Derive the expression for outage probability of a BPSK in flat fading channels. How is this related to Fade margin?", completed: false },
+            { id: 112, module: 5, marks: 8, paper: "May 2024", repetition: 1, question: "Define MUF. Derive an expression for MUF in terms of critical frequency, height of the ionospheric region at the point of reflection and skip distance.", completed: false },
+            { id: 113, module: 2, marks: 7, paper: "Aug 2024 Supplementary", repetition: 3, question: "What is the importance of Two Ray model? Derive the expression for path loss in a two ray ground reflection model.", completed: false },
+            { id: 114, module: 2, marks: 7, paper: "Aug 2024 Supplementary", repetition: 3, question: "Derive the expression for the impulse response model of a multipath channel", completed: false },
+            { id: 115, module: 3, marks: 8, paper: "Aug 2024 Supplementary", repetition: 3, question: "Derive expression for average probability of error in BPSK under Rayleigh flat fading when symbol duration is roughly equal to channel coherence time.", completed: false },
+            { id: 116, module: 5, marks: 9, paper: "Aug 2024 Supplementary", repetition: 2, question: "Derive the expression for the refractive index of ionosphere", completed: false },
+            { id: 117, module: 2, marks: 7, paper: "April 2025 Supplementary", repetition: 3, question: "What is the importance of Two Ray model? Derive the expression for path loss in a two ray ground reflection model.", completed: false },
+            { id: 118, module: 2, marks: 7, paper: "April 2025 Supplementary", repetition: 3, question: "Derive the expression for the impulse response model of a multipath channel", completed: false },
+            { id: 119, module: 5, marks: 9, paper: "April 2025 Supplementary", repetition: 2, question: "Derive the expression for the refractive index of ionosphere", completed: false },
+            { id: 120, module: 2, marks: 10, paper: "Sept 2025", repetition: 3, question: "What is the importance of Two Ray model? Derive the expression for path loss in a two-ray ground reflection model.", completed: false },
+            { id: 121, module: 3, marks: 7, paper: "Sept 2025", repetition: 1, question: "Derive an equation to calculate the average error probability of a BPSK based signalling in a flat fading channel.", completed: false },
+            { id: 122, module: 5, marks: 9, paper: "Sept 2025", repetition: 2, question: "Derive the expression for the refractive index of ionosphere", completed: false }
+        ];
+
+        let currentTab = 0; // 0 = Numerical, 1 = Derivation
+        let questions = numericalQuestions; // default
+
+        function getCurrentQuestions() {
+            return currentTab === 0 ? numericalQuestions : derivationQuestions;
+        }
+
         function loadProgress() {
-            const saved = localStorage.getItem('ect402_progress');
+            const key = currentTab === 0 ? 'ect402_numerical_progress' : 'ect402_derivation_progress';
+            const saved = localStorage.getItem(key);
             if (saved) {
                 const completedIds = JSON.parse(saved);
-                questions.forEach(q => q.completed = completedIds.includes(q.id));
+                getCurrentQuestions().forEach(q => q.completed = completedIds.includes(q.id));
             }
         }
 
         function saveProgress() {
-            const completedIds = questions.filter(q => q.completed).map(q => q.id);
-            localStorage.setItem('ect402_progress', JSON.stringify(completedIds));
-            const el = document.getElementById('last-updated');
+            const key = currentTab === 0 ? 'ect402_numerical_progress' : 'ect402_derivation_progress';
+            const completedIds = getCurrentQuestions().filter(q => q.completed).map(q => q.id);
+            localStorage.setItem(key, JSON.stringify(completedIds));
+            const el = document.getElementById('last-updated') || document.createElement('div');
+            if (el.id !== 'last-updated') return;
             el.innerHTML = `Last saved: <span class="text-emerald-400">just now</span>`;
-            setTimeout(() => el.textContent = 'Last saved: just now', 2500);
+            setTimeout(() => { if (el) el.textContent = 'Last saved: just now'; }, 2500);
         }
 
         function calculateStats() {
-            const completed = questions.filter(q => q.completed);
+            const qs = getCurrentQuestions();
+            const completed = qs.filter(q => q.completed);
             const totalCompleted = completed.length;
             const totalCompletedMarks = completed.reduce((sum, q) => sum + q.marks, 0);
-            const totalMarks = questions.reduce((sum, q) => sum + q.marks, 0);
-            const progress = Math.round((totalCompleted / questions.length) * 100);
-            
-            document.getElementById('total-questions').textContent = questions.length;
+            const totalMarks = qs.reduce((sum, q) => sum + q.marks, 0);
+            const progress = Math.round((totalCompleted / qs.length) * 100);
+
+            document.getElementById('total-questions').textContent = qs.length;
             document.getElementById('total-marks').textContent = totalMarks;
             document.getElementById('progress-bar').style.width = `${progress}%`;
             document.getElementById('progress-text').innerHTML = `<span>${totalCompleted} completed</span><span>${progress}%</span>`;
             document.getElementById('marks-completed').innerHTML = `<span class="font-semibold">${totalCompletedMarks}</span> / ${totalMarks} marks completed`;
             document.getElementById('completed-count').textContent = totalCompleted;
-            document.getElementById('high-priority-count').textContent = questions.filter(q => q.repetition === 2).length;
+            document.getElementById('high-priority-count').textContent = qs.filter(q => q.repetition >= 2).length;
         }
 
         function renderTable(filteredQuestions) {
@@ -284,8 +338,8 @@
                     <td class="py-5 px-8 font-semibold text-[#00d4ff]">${q.marks}</td>
                     <td class="py-5 px-8 text-gray-300">${q.paper}</td>
                     <td class="py-5 px-8">
-                        ${q.repetition === 2 
-                            ? `<span class="inline-flex items-center gap-1 bg-amber-400 text-black text-xs font-bold px-3 py-1 rounded-2xl"><i class="fa-solid fa-fire"></i>2</span>` 
+                        ${q.repetition >= 2 
+                            ? `<span class="inline-flex items-center gap-1 bg-amber-400 text-black text-xs font-bold px-3 py-1 rounded-2xl"><i class="fa-solid fa-fire"></i>${q.repetition}</span>` 
                             : `<span class="text-gray-400 text-xs">1</span>`}
                     </td>
                 `;
@@ -294,7 +348,8 @@
         }
 
         function toggleComplete(id, isChecked) {
-            const question = questions.find(q => q.id === id);
+            const qs = getCurrentQuestions();
+            const question = qs.find(q => q.id === id);
             if (question) {
                 question.completed = isChecked;
                 saveProgress();
@@ -310,19 +365,19 @@
             const paperFilter = document.getElementById('paper-filter').value;
             const activeRepFilter = document.querySelector('.filter-btn.active').getAttribute('data-rep') || 'all';
 
-            let filtered = questions.filter(q => {
+            let filtered = getCurrentQuestions().filter(q => {
                 const matchesSearch = !searchTerm || q.question.toLowerCase().includes(searchTerm);
                 const matchesModule = !moduleFilter || q.module.toString() === moduleFilter;
                 const matchesMarks = !marksFilter || q.marks.toString() === marksFilter;
                 const matchesPaper = !paperFilter || q.paper === paperFilter;
                 let matchesRep = true;
                 if (activeRepFilter === '1') matchesRep = q.repetition === 1;
-                if (activeRepFilter === '2') matchesRep = q.repetition === 2;
+                if (activeRepFilter === '2') matchesRep = q.repetition >= 2;
                 return matchesSearch && matchesModule && matchesMarks && matchesPaper && matchesRep;
             });
 
             renderTable(filtered);
-            document.getElementById('filtered-count').innerHTML = `Showing <span class="font-semibold text-white">${filtered.length}</span> of ${questions.length} questions`;
+            document.getElementById('filtered-count').innerHTML = `Showing <span class="font-semibold text-white">${filtered.length}</span> of ${getCurrentQuestions().length} questions`;
         }
 
         function toggleRepetitionFilter(mode) {
@@ -342,26 +397,42 @@
             applyFilters();
         }
 
-        function resetProgress() {
-            if (confirm('Reset ALL progress? This cannot be undone.')) {
-                questions.forEach(q => q.completed = false);
-                localStorage.removeItem('ect402_progress');
+        function resetAllProgress() {
+            if (confirm('Reset ALL progress for both Numerical and Derivation questions?')) {
+                numericalQuestions.forEach(q => q.completed = false);
+                derivationQuestions.forEach(q => q.completed = false);
+                localStorage.removeItem('ect402_numerical_progress');
+                localStorage.removeItem('ect402_derivation_progress');
                 calculateStats();
                 applyFilters();
             }
+        }
+
+        function switchTab(tabIndex) {
+            currentTab = tabIndex;
+            // Update active tab UI
+            document.getElementById('tab-0').classList.toggle('tab-active', tabIndex === 0);
+            document.getElementById('tab-1').classList.toggle('tab-active', tabIndex === 1);
+
+            questions = getCurrentQuestions();
+            loadProgress();
+            calculateStats();
+            renderTable(questions);
+            applyFilters();
         }
 
         // ====================== INITIALIZE ======================
         function initializeApp() {
             loadProgress();
             calculateStats();
-            renderTable(questions);
+            renderTable(numericalQuestions);
             
+            // Set data attributes
             document.getElementById('rep-all').setAttribute('data-rep', 'all');
             document.getElementById('rep-1').setAttribute('data-rep', '1');
             document.getElementById('rep-2').setAttribute('data-rep', '2');
             
-            console.log('%c✅ ECT402 Study Planner loaded with all 34 numerical questions', 'color:#00d4ff; font-family:monospace');
+            console.log('%c✅ ECT402 Dual-Tab Study Planner loaded (Numerical + Derivations)', 'color:#00d4ff; font-family:monospace');
         }
 
         window.onload = initializeApp;
